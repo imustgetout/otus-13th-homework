@@ -71,6 +71,8 @@
 
     [root@otus ~]# semanage port -a -t http_port_t -p tcp 5080
 
+Запустим nginx и
+
 Проверяем:
 
     [root@otus ~]# netstat -nlpt |grep nginx
@@ -105,7 +107,7 @@ nginx запустился на порту 5080
 
 ##### 2 вариант решения - Создание модуля политики:
 
-Стартуем, получаем туже ошибку.
+Стартуем, получаем ту же ошибку.
 
 Смотрим журнал аудита:
 
@@ -120,7 +122,7 @@ nginx запустился на порту 5080
  
  часть вывода обрезано.
  
- Создадим политику:
+ Создадим модуль политики:
 
     [root@otus ~]# ausearch -c 'nginx' --raw | audit2allow -M my-nginx
     IMPORTANT 
@@ -133,6 +135,9 @@ nginx запустился на порту 5080
     [root@otus ~]# semodule -i my-nginx.pp
     [root@otus ~]# semodule -l |grep my-nginx
     my-nginx	1.0
+    
+Проверим:
+    
     [root@otus ~]# systemctl start nginx
     [root@otus ~]# netstat -lntp |grep nginx
     tcp        0      0 0.0.0.0:5080            0.0.0.0:*               LISTEN      9554/nginx: master
@@ -145,9 +150,14 @@ nginx запустился на порту 5080
 
 Третий вариант делал на другой виртуалке, т.л. проинсталированная политика не удалялась(конфиг такой же).
 
-Стартуем, получаем ошибку.
+Стартуем, получаем ту же самую ошибку.
+
+Решение:
 
     [root@centos-s-2vcpu-4gb-fra1-01 ~]# setsebool -P nis_enabled 1
+    
+Проверяем:
+
     [root@centos-s-2vcpu-4gb-fra1-01 ~]# systemctl start nginx
     [root@centos-s-2vcpu-4gb-fra1-01 ~]# systemctl status nginx
     [root@centos-s-2vcpu-4gb-fra1-01 ~]# netstat -nltp |grep nginx
@@ -160,7 +170,7 @@ nginx запустился на порту 5080
 
 ### 2. Обеспечить работоспособность приложения при включенном selinux.
 
-Сначала на клиенте попробуем обновить А запись на сервере.
+Сначала на клиенте попробуем обновить А запись на сервере, чтобы в логе появилась ошибка.
 
 На сервере выполняем:
 
