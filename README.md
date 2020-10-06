@@ -148,11 +148,8 @@ nginx запустился на порту 5080
 Стартуем, получаем ошибку.
 
     [root@centos-s-2vcpu-4gb-fra1-01 ~]# setsebool -P nis_enabled 1
-
     [root@centos-s-2vcpu-4gb-fra1-01 ~]# systemctl start nginx
-    
     [root@centos-s-2vcpu-4gb-fra1-01 ~]# systemctl status nginx
-    
     [root@centos-s-2vcpu-4gb-fra1-01 ~]# netstat -nltp |grep nginx
     tcp        0      0 0.0.0.0:5080            0.0.0.0:*               LISTEN      147515/nginx: maste
     tcp6       0      0 :::80                   :::*                    LISTEN      147515/nginx: maste
