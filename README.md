@@ -330,3 +330,103 @@ nginx запустился на порту 5080
     > update add www.ddns.lab. 60 A 192.168.50.15
     > send
     > 
+
+### 2. Более правильный способ с исправленным стендом
+
+Изменяем разворачиваемый стенд
+
+Меняем 2 файла в provisioning: named.conf и playbook.yml.
+
+named.conf
+
+Было:
+
+    // labs ddns zone
+    zone "ddns.lab" {
+        type master;
+        allow-transfer { key "zonetransfer.key"; };
+        allow-update { key "zonetransfer.key"; };
+        file "/etc/named/dynamic/named.ddns.lab.view1";
+
+	Секция view "default"
+    // labs ddns zone
+    zone "ddns.lab" {
+        type master;
+        allow-transfer { key "zonetransfer.key"; };
+        allow-update { key "zonetransfer.key"; };
+        file "/etc/named/dynamic/named.ddns.lab";
+
+Стало:
+
+    // labs ddns zone
+    zone "ddns.lab" {
+        type master;
+        allow-transfer { key "zonetransfer.key"; };
+        allow-update { key "zonetransfer.key"; };
+        file "/var/named/dynamic/named.ddns.lab.view1";
+
+    Секция view "default"
+    // labs ddns zone
+    zone "ddns.lab" {
+        type master;
+        allow-transfer { key "zonetransfer.key"; };
+        allow-update { key "zonetransfer.key"; };
+        file "/var/named/dynamic/named.ddns.lab";
+	
+Весь текст не показываю, остальные секции не менялись
+
+playbook.yml:
+
+Было:
+
+    - name: copy dynamic zone ddns.lab
+      copy:
+      src: files/ns01/named.ddns.lab
+      dest: /etc/named/dynamic/
+      owner: named
+      group: named
+      mode: 0660
+
+    - name: copy dynamic zone ddns.lab.view1
+      copy:
+      src: files/ns01/named.ddns.lab.view1
+      dest: /etc/named/dynamic/
+      owner: named
+      group: named
+      mode: 0660
+
+    - name: set /etc/named/dynamic permissions
+      file:
+      path: /etc/named/dynamic
+      owner: root
+      group: named
+      mode: 0670
+      
+  Стало:
+  
+    - name: copy dynamic zone ddns.lab
+      copy:
+      src: files/ns01/named.ddns.lab
+      dest: /var/named/dynamic/
+      owner: named
+      group: named
+      mode: 0660
+
+    - name: copy dynamic zone ddns.lab.view1
+      copy:
+      src: files/ns01/named.ddns.lab.view1
+      dest: /var/named/dynamic/
+      owner: named
+      group: named
+      mode: 0660
+
+    - name: set /var/named/dynamic permissions
+      file:
+      path: /var/named/dynamic
+      owner: root
+      group: named
+      mode: 0670
+      
+  В named.conf переопределяем где будут лежать файлы зоны (/var/named/dynamic - туда есть право записи для named_log_t),
+  
+  В playbook.yml копируем уже в измененный каталог(+ права доступа на новый каталог)  
